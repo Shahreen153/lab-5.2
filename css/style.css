@@ -1,0 +1,365 @@
+/* ==========================================================================
+   Shahreen Qasim Portfolio - Single-Screen 3D Flipbook Stylesheet
+   CIT331 Web Technologies - Single-Screen Non-Scrolling Presentation
+   ========================================================================== */
+
+/* Exact Color & Design Tokens Preserved from Original Project */
+:root {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Fira Code', monospace;
+
+  /* Color Palette - Light */
+  --bg-primary: #f8faff;
+  --bg-surface: rgba(255, 255, 255, 0.88);
+  --bg-surface-elevated: #ffffff;
+  --bg-subtle: #f1f5f9;
+  --border-color: rgba(226, 232, 240, 0.85);
+  --border-hover: rgba(99, 102, 241, 0.45);
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-subtle: #94a3b8;
+  --brand-primary: #4f46e5;
+  --brand-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --glow-color: rgba(99, 102, 241, 0.15);
+  --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+  --card-shadow-hover: 0 16px 30px -4px rgba(99, 102, 241, 0.18);
+
+  /* Layout Viewport Dimensions */
+  --header-height: clamp(50px, 6.5vh, 64px);
+  --controls-height: clamp(48px, 6vh, 58px);
+}
+
+/* Dark Mode Overrides */
+html.dark {
+  --bg-primary: #0b0f19;
+  --bg-surface: rgba(17, 24, 39, 0.85);
+  --bg-surface-elevated: #1e293b;
+  --bg-subtle: #1e293b;
+  --border-color: rgba(51, 65, 85, 0.75);
+  --border-hover: rgba(129, 140, 248, 0.5);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
+  --brand-primary: #818cf8;
+  --brand-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --glow-color: rgba(99, 102, 241, 0.25);
+  --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45);
+  --card-shadow-hover: 0 16px 30px -4px rgba(99, 102, 241, 0.35);
+}
+
+/* STRICT VIEWPORT CONFINEMENT: 100dvh x 100vw, NO SCROLLBAR ANYWHERE */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100vw;
+  height: 100dvh;
+  max-width: 100vw;
+  max-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden !important; /* STRICT NO SCROLL */
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Allow text selection inside cards and details */
+p, span, h1, h2, h3, h4, pre, code, a, button, input, textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Kill all scrollbars globally */
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* Headings Typography */
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+}
+
+/* Glassmorphism Header */
+.glass-nav {
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  height: var(--header-height);
+  flex-shrink: 0;
+}
+
+/* Ambient Backdrop Glows */
+.ambient-glow {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: -10;
+  opacity: 0.65;
+}
+
+.hero-grid-pattern {
+  background-image: radial-gradient(rgba(99, 102, 241, 0.14) 1px, transparent 1px);
+  background-size: clamp(20px, 2.5vw, 28px) clamp(20px, 2.5vw, 28px);
+}
+
+html.dark .hero-grid-pattern {
+  background-image: radial-gradient(rgba(129, 140, 248, 0.16) 1px, transparent 1px);
+}
+
+/* ==========================================================================
+   3D FLIPBOOK STAGE & REALISTIC PAGE FLIP TRANSFORMS
+   ========================================================================== */
+.flipbook-stage {
+  position: relative;
+  width: 100vw;
+  height: calc(100dvh - var(--header-height) - var(--controls-height));
+  max-height: calc(100dvh - var(--header-height) - var(--controls-height));
+  perspective: 2200px;
+  -webkit-perspective: 2200px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Each Page of the Flipbook */
+.book-page {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  padding: clamp(0.4rem, 1.5vh, 1.25rem) clamp(0.75rem, 2.5vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: rotateY(90deg) scale(0.96);
+  transition: transform 600ms cubic-bezier(0.645, 0.045, 0.355, 1),
+              opacity 600ms ease,
+              visibility 600ms;
+  will-change: transform, opacity;
+}
+
+/* Active Visible Page */
+.book-page.page-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: rotateY(0deg) scale(1);
+  z-index: 10;
+}
+
+/* Previous Page State (Flipped forward/left) */
+.book-page.page-past {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: rotateY(-90deg) scale(0.96);
+  z-index: 5;
+}
+
+/* Next Page State (Waiting forward/right) */
+.book-page.page-future {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: rotateY(90deg) scale(0.96);
+  z-index: 5;
+}
+
+/* Page inner bounds to fit content strictly without overflow */
+.page-container {
+  width: 100%;
+  max-width: clamp(340px, 92vw, 1280px);
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Navigation active indicator */
+.nav-btn.active {
+  color: #4f46e5;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+}
+html.dark .nav-btn.active {
+  color: #a5b4fc;
+  background-color: #1e293b;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* ==========================================================================
+   INDIVIDUAL 3D FLIP CARDS (For Projects & Skills)
+   ========================================================================== */
+.flip-card-wrapper {
+  perspective: 1400px;
+  -webkit-perspective: 1400px;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.flip-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+  transition: transform 550ms cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border-radius: clamp(1rem, 2vh, 1.5rem);
+}
+
+.flip-card.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.flip-card-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: inherit;
+  background-color: var(--bg-surface);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.flip-card:hover .flip-card-face {
+  border-color: var(--border-hover);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.flip-card-front {
+  transform: rotateY(0deg);
+  z-index: 2;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+  z-index: 1;
+  background: var(--bg-surface-elevated);
+}
+
+/* Flip cue badge styling */
+.flip-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: clamp(0.68rem, 1.1vh, 0.78rem);
+  font-weight: 700;
+  color: var(--brand-primary);
+  background: rgba(99, 102, 241, 0.08);
+  padding: 0.3rem 0.65rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  transition: all 0.2s ease;
+}
+
+.flip-card:hover .flip-hint {
+  background: var(--brand-primary);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   BOTTOM CONTROLLER (PERSISTENT PAGE BAR)
+   ========================================================================== */
+.flip-controller {
+  height: var(--controls-height);
+  flex-shrink: 0;
+  background-color: var(--bg-surface);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(0.75rem, 3vw, 2rem);
+  z-index: 30;
+}
+
+.page-dot {
+  width: clamp(7px, 1.2vw, 10px);
+  height: clamp(7px, 1.2vw, 10px);
+  border-radius: 9999px;
+  background-color: var(--text-subtle);
+  opacity: 0.35;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+
+.page-dot.active {
+  width: clamp(22px, 3.5vw, 32px);
+  background: var(--brand-gradient);
+  opacity: 1;
+  box-shadow: 0 0 10px var(--brand-primary);
+}
+
+/* Code Snippet Card */
+.code-window {
+  font-family: var(--font-mono);
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: clamp(0.75rem, 1.8vh, 1.25rem);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Respect Prefers-Reduced-Motion */
+@media (prefers-reduced-motion: reduce) {
+  .book-page {
+    transition: opacity 250ms ease !important;
+    transform: none !important;
+  }
+  .flip-card {
+    transition: none !important;
+  }
+  .flip-card.is-flipped .flip-card-front {
+    display: none !important;
+  }
+  .flip-card.is-flipped .flip-card-back {
+    transform: none !important;
+    display: flex !important;
+  }
+}
+
+/* Modal styling */
+.modal-backdrop {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
